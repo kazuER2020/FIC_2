@@ -8,7 +8,7 @@
  * 日本語配列を使用するため、#include <Keyboard_jp.h>　が必須
  * keyboard_jp.h の入手方法：
  * ①https://github.com/I-himawari/Keyboard_jp/tree/main からKeyboard.cppとkeyboard.hを入手
- * ②"C:\Users\kodani_kz\Documents\Arduino\libraries\Keyboard_jp" のディレクトリを作成し、
+ * ②"C:\Users\(ユーザー名)\Documents\Arduino\libraries\Keyboard_jp" のディレクトリを作成し、
  * ③そこにKeyboard_jp.cppとKeyboard_jp.hとしてリネームして配置すること
  * ブロック図は"FIC2.drawio"を参照
  */
