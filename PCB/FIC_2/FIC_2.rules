@@ -1,0 +1,93 @@
+
+(rules PCB FIC_2
+  (snap_angle 
+    fortyfive_degree
+  )
+  (autoroute_settings
+    (fanout off)
+    (eu.mihosoft.freerouting.autoroute on)
+    (postroute on)
+    (vias on)
+    (via_costs 50)
+    (plane_via_costs 5)
+    (start_ripup_costs 100)
+    (start_pass_no 1384)
+    (layer_rule F.Cu
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 2.0)
+    )
+    (layer_rule B.Cu
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 2.0)
+    )
+  )
+  (rule
+    (width 250.0)
+    (clear 200.2)
+    (clear 125.0 (type smd_to_turn_gap))
+    (clear 50.0 (type smd_smd))
+  )
+  (padstack "Via[0-1]_800:400_um"
+    (shape
+      (circle F.Cu 800.0 0.0 0.0)
+    )
+    (shape
+      (circle B.Cu 800.0 0.0 0.0)
+    )
+    (attach off)
+  )
+  (via 
+    "Via[0-1]_800:400_um" "Via[0-1]_800:400_um" default
+  )
+  (via 
+    "Via[0-1]_800:400_um-kicad_default" "Via[0-1]_800:400_um" "kicad_default"
+  )
+  (via_rule
+    default "Via[0-1]_800:400_um"
+  )
+  (via_rule
+    "kicad_default" "Via[0-1]_800:400_um-kicad_default"
+  )
+  (class default
+    (clearance_class default)
+    (via_rule default)
+    (rule
+      (width 250.0)
+    )
+    (circuit 
+      (use_layer F.Cu B.Cu)
+    )
+  )
+  (class "kicad_default"
+    (clearance_class "kicad_default")
+    (via_rule kicad_default)
+    (rule
+      (width 250.0)
+    )
+    (circuit 
+      (use_layer F.Cu B.Cu)
+    )
+  )
+  (class class1
+    "Net-(C1-Pad2)" GND "Net-(C2-Pad2)" "Net-(C3-Pad2)" +5V "Net-(C5-Pad1)" "Net-(D1-Pad2)" /D6*
+    /RXLED "Net-(D2-Pad2)" "Net-(D3-Pad2)" /TXLED /D5* "Net-(D4-Pad2)" "Net-(D5-Pad2)" /D13*
+    "Net-(D6-Pad2)" "Net-(ENC1-Pad4)" "Net-(ENC1-Pad5)" /D3 /D2 /MISO /SCK /MOSI
+    /~RESET "Net-(J2-Pad2)" "Net-(J2-Pad3)" "Net-(J2-Pad4)" "Net-(R4-Pad1)" "Net-(R5-Pad1)" /D7 /D4
+    /D12 /A0 /A5 /A4 /A3 /A2 /A1 "Net-(SW2-Pad2)"
+    "Net-(SW2-Pad3)" "Net-(SW3-Pad2)" "Net-(SW3-Pad3)" "Net-(SW4-Pad2)" "Net-(SW4-Pad3)" "Net-(SW5-Pad3)" "Net-(SW5-Pad2)" "Net-(SW6-Pad2)"
+    "Net-(SW6-Pad3)" "Net-(SW7-Pad3)" "Net-(SW7-Pad2)" "Net-(SW8-Pad2)" "Net-(SW8-Pad3)" "Net-(SW9-Pad3)" "Net-(SW9-Pad2)" "Net-(SW10-Pad3)"
+    "Net-(SW10-Pad2)" /D11* "/D0(RX)" "/D1(TX)" /D8 /D9* /D10*
+    (clearance_class default)
+    (via_rule default)
+    (rule
+      (width 500.0)
+    )
+    (circuit 
+      (use_layer F.Cu B.Cu)
+    )
+  )
+)
