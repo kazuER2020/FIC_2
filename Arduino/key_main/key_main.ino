@@ -3,8 +3,8 @@
  * 2025.05.01 初版
  *
  * 片手入力デバイス用のキー入力ソフト
- * TCSW x10, ロータリーエンコーダ x1 
- * 最大3レイヤ、10個のキーを割り当て可能
+ * TCSW x9, ロータリーエンコーダ x1 
+ * 最大3レイヤ、9個のキーを割り当て可能
  * 日本語配列を使用するため、#include <Keyboard_jp.h>　が必須
  * keyboard_jp.h の入手方法：
  * ①https://github.com/I-himawari/Keyboard_jp/tree/main からKeyboard.cppとkeyboard.hを入手
