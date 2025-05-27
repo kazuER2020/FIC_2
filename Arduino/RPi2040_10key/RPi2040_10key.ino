@@ -161,10 +161,6 @@ void sw_process(void) {
     // SWのどれかが押された時
     case TURN_ON:
       cnt_cht = millis();
-      while (get_sw() > 0)
-        ;                 // 同時押しが離されるまで待つ
-      pattern = SCAN_SW;  // 検出状態を最初に戻す
-
 
       if (cnt_cht - cnt0 > 40) {  // チャタリング防止:40ms
         digitalWrite(LED_RIGHT, LOW);
