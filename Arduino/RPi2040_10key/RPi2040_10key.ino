@@ -1,10 +1,41 @@
 #include <Adafruit_NeoPixel.h>
+#include <Keyboard.h>
 
+/* SWのスキャン状態の遷移 */
 #define SCAN_SW 0
 #define TURN_ON 1
 #define DETECT_SW 2
 
+/*キーボードのレイヤー分け*/
+#define LAYER_1 1
+#define LAYER_2 2
+#define LAYER_3 3
+#define MAX_LAYERS 3
+
 #define SW_DATA_MAX 0xFFFFF
+
+/* SW判定個別検出用 */
+#define DET_SW1   0x00001
+#define DET_SW2   0x00002
+#define DET_SW3   0x00004
+#define DET_SW4   0x00008
+#define DET_SW5   0x00010
+#define DET_SW6   0x00020
+#define DET_SW7   0x00040
+#define DET_SW8   0x00080
+#define DET_SW9   0x00100
+#define DET_SW10  0x00200
+#define DET_SW11  0x00400
+#define DET_SW12  0x00800
+#define DET_SW13  0x01000
+#define DET_SW14  0x02000
+#define DET_SW15  0x04000
+#define DET_SW16  0x08000
+#define DET_SW17  0x10000
+#define DET_SW18  0x20000
+#define DET_SW19  0x40000
+#define DET_SW20  0x80000
+
 
 /* ポート定義 */
 const int LED_PIN = 16;  // RPi2040上のRGB LED(GP16)
@@ -28,10 +59,12 @@ const int rows[5] = {
   28, 27, 26, 15, 14
 };
 const int cols[4] = {
+  // COL0, COL1, COL2, COL3
   7, 6, 5, 4
 };
 
 const int LEDS[3] = {
+  // LEFT, CENTER, RIGHT
   0, 1, 2
 };
 unsigned char sw_stat[20] = {0};
@@ -39,6 +72,7 @@ unsigned char sw_stat[20] = {0};
 uint32_t nowtime, starttime;
 int now_sw, old_sw;
 int pattern;
+int layer;
 uint32_t datas;
 
 #define COLOR_REPEAT 2
@@ -68,10 +102,12 @@ void setup() {
 
   pixels.begin();  // initialize the pixel(RPI2040上のRGB LED)
   pattern = SCAN_SW;
+  layer = LAYER_1;
   Serial.begin(115200);         // ← これを必ず書く
   while (!Serial) {             // ← 書き込んだ後、シリアルが開くまで待機
     delay(10);
   }
+  Keyboard.begin();
   for (int i = 0; i < (sizeof(LEDS) / sizeof(LEDS[0])); i++) {
     digitalWrite(LEDS[i], HIGH);
     delay(300);
@@ -84,6 +120,7 @@ void setup() {
 
   Serial.println("Hello from RP2040!");
 
+  debug_led(layer);
 
   starttime = millis();
 }
@@ -92,11 +129,13 @@ void loop() {
   nowtime = millis();
   if (nowtime - starttime > 1) {
     starttime = nowtime;
-    datas = get_sw();
-    Serial.println(datas, BIN);
+    now_sw = get_sw();
+    Serial.println(now_sw, HEX);
     sw_process();
 
   }
+
+  old_sw = now_sw;
 }
 
 /************************************************************************/
@@ -150,29 +189,232 @@ void sw_process(void) {
   switch (pattern) {
     // SWの全スキャン
     case SCAN_SW:
-      now_sw = get_sw();
       if (now_sw != old_sw) {
         pattern = TURN_ON;
         digitalWrite(LED_RIGHT, HIGH);
         cnt0 = millis();
+      }
+      if ( now_sw < 1 ) {
+        digitalWrite(LED_RIGHT, LOW);
       }
       break;
 
     // SWのどれかが押された時
     case TURN_ON:
       cnt_cht = millis();
+      layer_ischange = get_layer_change();
+      if (layer_ischange == 1) {   // レイヤ変更があった場合
+        layer++;                   // レイヤの階層を1進める
+        if (layer > MAX_LAYERS) {  // レイヤ数上限に達した場合は最初に戻す
+          layer = LAYER_1;
+        }
 
-      if (cnt_cht - cnt0 > 40) {  // チャタリング防止:40ms
-        digitalWrite(LED_RIGHT, LOW);
-        pattern = DETECT_SW;
-        cnt0 = cnt_cht;
+        for (i = 0; i < 3; i++) {  // レイヤ切り替えをLED点滅で表示
+          digitalWrite(LED_LEFT, HIGH);
+          digitalWrite(LED_CENTER, HIGH);
+          digitalWrite(LED_RIGHT, HIGH);
+          delay(100);
+          digitalWrite(LED_LEFT, LOW);
+          digitalWrite(LED_CENTER, LOW);
+          digitalWrite(LED_RIGHT, LOW);
+          delay(100);
+        }
+        debug_led(layer);  // レイヤ切り替え状態を表示
+        while (get_sw() > 0); // 同時押しが離されるまで待つ
+        pattern = SCAN_SW;  // 検出状態を最初に戻す
+
+      } else {
+        if (cnt_cht - cnt0 > 40) {  // チャタリング防止:40ms
+          pattern = DETECT_SW;
+          cnt0 = cnt_cht;
+        }
       }
       break;
 
     // ここから下にSWが押された時の挙動を書く
     case DETECT_SW:
-      pattern = SCAN_SW;
+      switch (layer) {
+        case LAYER_1:
+          /* ここにレイヤ1の内容を書く */
+          if ( now_sw & DET_SW1 ) {
+            //  Keyboard.press('+');
+          }
+          if ( now_sw & DET_SW2 ) {
+            //  Keyboard.press('-');
+          }
+          if ( now_sw & DET_SW3 ) {
+            //  Keyboard.press('*');
+          }
+          if ( now_sw & DET_SW4 ) {
+            //  Keyboard.press('/');
+          }
+          if ( now_sw & DET_SW5 ) {
+            Keyboard.press('7');
+          }
+          if ( now_sw & DET_SW6 ) {
+            Keyboard.press('8');
+          }
+          if ( now_sw & DET_SW7 ) {
+            Keyboard.press('9');
+          }
+          if ( now_sw & DET_SW8 ) {
+            Keyboard.press(KEY_BACKSPACE);
+          }
+          if ( now_sw & DET_SW9 ) {
+            Keyboard.press('4');
+          }
+          if ( now_sw & DET_SW10 ) {
+            Keyboard.press('5');
+          }
+          if ( now_sw & DET_SW11 ) {
+            Keyboard.press('6');
+          }
+          if ( now_sw & DET_SW12 ) {
+            // Keyboard.press(KEY_RETURN);
+          }
+          if ( now_sw & DET_SW13 ) {
+            Keyboard.press('1');
+          }
+          if ( now_sw & DET_SW14 ) {
+            Keyboard.press('2');
+          }
+          if ( now_sw & DET_SW15 ) {
+            Keyboard.press('3');
+          }
+          if ( now_sw & DET_SW16 ) {
+            Keyboard.press(KEY_RETURN);
+          }
+          if ( now_sw & DET_SW17 ) {
+            Keyboard.press('0');
+          }
+          if ( now_sw & DET_SW18 ) {
+            //  Keyboard.press(')');
+          }
+          if ( now_sw & DET_SW19 ) {
+            Keyboard.press(KEY_RIGHT_GUI);
+          }
+          if ( now_sw & DET_SW20 ) {
+            //  Keyboard.press(')');
+          }
+          break;
 
+        case LAYER_2:
+          /* ここにレイヤ2の内容を書く */
+          if ( now_sw & DET_SW1 ) {
+            //  Keyboard.press(KEY_NUMPAD_PLUS);
+          }
+          if ( now_sw & DET_SW2 ) {
+            //  Keyboard.press(KEY_NUMPAD_MINUS);
+          }
+          if ( now_sw & DET_SW3 ) {
+            //  Keyboard.press(KEY_NUMPAD_ASTERIX);
+          }
+          if ( now_sw & DET_SW4 ) {
+            //  Keyboard.press(KEY_NUMPAD_SLASH);
+          }
+          if ( now_sw & DET_SW5 ) {
+            //Keyboard.press('7');
+          }
+          if ( now_sw & DET_SW6 ) {
+            Keyboard.press(KEY_UP_ARROW);
+          }
+          if ( now_sw & DET_SW7 ) {
+            //Keyboard.press('9');01234567
+          }
+          if ( now_sw & DET_SW8 ) {
+            Keyboard.press(KEY_BACKSPACE);
+          }
+          if ( now_sw & DET_SW9 ) {
+            Keyboard.press(KEY_LEFT_ARROW);
+          }
+          if ( now_sw & DET_SW10 ) {
+            Keyboard.press(KEY_RETURN);
+          }
+          if ( now_sw & DET_SW11 ) {
+            Keyboard.press(KEY_RIGHT_ARROW);
+          }
+          if ( now_sw & DET_SW12 ) {
+            // Keyboard.press(KEY_RETURN);
+          }
+          if ( now_sw & DET_SW13 ) {
+            //Keyboard.press('1');
+          }
+          if ( now_sw & DET_SW14 ) {
+            Keyboard.press(KEY_DOWN_ARROW);
+          }
+          if ( now_sw & DET_SW15 ) {
+            //Keyboard.press('3');
+          }
+          if ( now_sw & DET_SW16 ) {
+            Keyboard.press(KEY_RETURN);
+          }
+          if ( now_sw & DET_SW17 ) {
+            Keyboard.press(KEY_RIGHT_GUI);
+            Keyboard.press('r');
+          }
+          if ( now_sw & DET_SW18 ) {
+            //  Keyboard.press(')');
+          }
+          if ( now_sw & DET_SW19 ) {
+            Keyboard.press(KEY_LEFT_CTRL);
+            Keyboard.press('f');
+          }
+          if ( now_sw & DET_SW20 ) {
+            //  Keyboard.press(')');
+          }
+          break;
+
+        case LAYER_3:
+          /* ここにレイヤ3の内容を書く */
+          break;
+
+        default:
+          /*NOT REACHED*/
+          break;
+
+      }
+      Keyboard.releaseAll();  // 押しているキーがある場合は離す
+      pattern = SCAN_SW;
+      break;
+
+    default:
+      /* NOT REACHED */
       break;
   }
+}
+
+/************************************************************************/
+/* SWのレイヤ変更検出                                                    */
+/* 引数 なし　　　　　　　　                                              */
+/* 戻り値 1:レイヤ変更検出 0:レイヤ変更しない(そのまま)                    */
+/************************************************************************/
+int get_layer_change(void) {
+  int ret;
+  int s;
+  ret = 0;
+  s = get_sw();
+  if ((s & DET_SW5) && (s & DET_SW6)) {
+    ret = 1;
+  }
+  return ret;
+}
+
+/************************************************************************/
+/* debug用LED                                                           */
+/* 引数 led_pcb:PCBnew用LED  led_esm:Eschema用LED layer:現在のレイヤ数    */
+/* 戻り値  なし　　　　　　　　　　　　　　　　　　　　　　　　　　　　　　    */
+/* メモ 2bitのLEDとして現在のレイヤを識別するために使用                    */
+/************************************************************************/
+void debug_led(int layer) {
+  int i;
+
+  // まず全部消す
+  for (i = 0; i < sizeof(LEDS) / sizeof(LEDS[0]); i++) {
+    digitalWrite(LEDS[i], LOW);
+  }
+
+  digitalWrite(LEDS[0], (0x02 & layer) >> 1);
+  digitalWrite(LEDS[1], 0x01 & layer);
+
+
 }
