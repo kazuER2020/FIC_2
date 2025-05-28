@@ -125,7 +125,6 @@ void setup() {
   }
 
   Serial.println("Hello from RP2040!");
-
   debug_led(layer);
 
   starttime = millis();
@@ -208,7 +207,7 @@ void loop() {
             Keyboard.press('9');
           }
           if ( now_sw & DET_SW8 ) {
-            Keyboard.press(KEY_BACKSPACE);
+            Keyboard.press('+');
           }
           if ( now_sw & DET_SW9 ) {
             Keyboard.press('4');
@@ -263,13 +262,77 @@ void loop() {
             //  Keyboard.press(KEY_NUMPAD_SLASH);
           }
           if ( now_sw & DET_SW5 ) {
-            //Keyboard.press('7');
+            Keyboard.press(KEY_HOME);
           }
           if ( now_sw & DET_SW6 ) {
             Keyboard.press(KEY_UP_ARROW);
           }
           if ( now_sw & DET_SW7 ) {
-            //Keyboard.press('9');01234567
+            Keyboard.press(KEY_PAGE_UP);
+          }
+          if ( now_sw & DET_SW8 ) {
+            Keyboard.press(KEY_PRINTSCREEN);
+          }
+          if ( now_sw & DET_SW9 ) {
+            Keyboard.press(KEY_LEFT_ARROW);
+          }
+          if ( now_sw & DET_SW10 ) {
+            Keyboard.press(KEY_RETURN);
+          }
+          if ( now_sw & DET_SW11 ) {
+            Keyboard.press(KEY_RIGHT_ARROW);
+          }
+          if ( now_sw & DET_SW12 ) {
+            // Keyboard.press(KEY_RETURN);
+          }
+          if ( now_sw & DET_SW13 ) {
+            Keyboard.press(KEY_END);
+          }
+          if ( now_sw & DET_SW14 ) {
+            Keyboard.press(KEY_DOWN_ARROW);
+          }
+          if ( now_sw & DET_SW15 ) {
+            Keyboard.press(KEY_PAGE_DOWN);
+          }
+          if ( now_sw & DET_SW16 ) {
+            Keyboard.press(KEY_RETURN);
+          }
+          if ( now_sw & DET_SW17 ) {
+            Keyboard.press(KEY_INSERT);
+          }
+          if ( now_sw & DET_SW18 ) {
+            //  Keyboard.press(')');
+          }
+          if ( now_sw & DET_SW19 ) {
+            Keyboard.press(KEY_DELETE);
+          }
+          if ( now_sw & DET_SW20 ) {
+            //  Keyboard.press(')');
+          }
+          break;
+
+        case LAYER_3:
+          /* ここにレイヤ3の内容を書く */
+          if ( now_sw & DET_SW1 ) {
+            //  Keyboard.press(KEY_NUMPAD_PLUS);
+          }
+          if ( now_sw & DET_SW2 ) {
+            //  Keyboard.press(KEY_NUMPAD_MINUS);
+          }
+          if ( now_sw & DET_SW3 ) {
+            //  Keyboard.press(KEY_NUMPAD_ASTERIX);
+          }
+          if ( now_sw & DET_SW4 ) {
+            //  Keyboard.press(KEY_NUMPAD_SLASH);
+          }
+          if ( now_sw & DET_SW5 ) {
+            Keyboard.press(KEY_HOME);
+          }
+          if ( now_sw & DET_SW6 ) {
+            Keyboard.press(KEY_UP_ARROW);
+          }
+          if ( now_sw & DET_SW7 ) {
+            Keyboard.press(KEY_PAGE_UP);
           }
           if ( now_sw & DET_SW8 ) {
             Keyboard.press(KEY_BACKSPACE);
@@ -287,41 +350,34 @@ void loop() {
             // Keyboard.press(KEY_RETURN);
           }
           if ( now_sw & DET_SW13 ) {
-            //Keyboard.press('1');
+            Keyboard.press(KEY_END);
           }
           if ( now_sw & DET_SW14 ) {
             Keyboard.press(KEY_DOWN_ARROW);
           }
           if ( now_sw & DET_SW15 ) {
-            //Keyboard.press('3');
+            Keyboard.press(KEY_PAGE_DOWN);
           }
           if ( now_sw & DET_SW16 ) {
             Keyboard.press(KEY_RETURN);
           }
           if ( now_sw & DET_SW17 ) {
-            Keyboard.press(KEY_RIGHT_GUI);
-            Keyboard.press('r');
+            Keyboard.press(KEY_ESC);
           }
           if ( now_sw & DET_SW18 ) {
             //  Keyboard.press(')');
           }
           if ( now_sw & DET_SW19 ) {
-            Keyboard.press(KEY_LEFT_CTRL);
-            Keyboard.press('f');
+            Keyboard.press(KEY_DELETE);
           }
           if ( now_sw & DET_SW20 ) {
             //  Keyboard.press(')');
           }
           break;
 
-        case LAYER_3:
-          /* ここにレイヤ3の内容を書く */
-          break;
-
         default:
           /*NOT REACHED*/
           break;
-
       }
       isclick++;
       Keyboard.releaseAll();  // 押しているキーがある場合は離す
@@ -430,6 +486,4 @@ void debug_led(int layer) {
 
   digitalWrite(LEDS[0], (0x02 & layer) >> 1);
   digitalWrite(LEDS[1], 0x01 & layer);
-
-
 }
