@@ -207,7 +207,7 @@ void loop() {
             Keyboard.press('9');
           }
           if ( now_sw & DET_SW8 ) {
-            Keyboard.press('+');
+            Keyboard.press(KEY_KP_PLUS);
           }
           if ( now_sw & DET_SW9 ) {
             Keyboard.press('4');
@@ -326,7 +326,7 @@ void loop() {
             //  Keyboard.press(KEY_NUMPAD_SLASH);
           }
           if ( now_sw & DET_SW5 ) {
-            Keyboard.press(KEY_HOME);
+            Keyboard.press(KEY_ESC);
           }
           if ( now_sw & DET_SW6 ) {
             Keyboard.press(KEY_UP_ARROW);
