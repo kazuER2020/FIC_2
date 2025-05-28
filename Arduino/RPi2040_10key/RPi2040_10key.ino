@@ -5,6 +5,7 @@
 #define SCAN_SW 0
 #define TURN_ON 1
 #define DETECT_SW 2
+#define RELOAD_SW 3
 
 /*キーボードのレイヤー分け*/
 #define LAYER_1 1
@@ -75,6 +76,11 @@ int pattern;
 int layer;
 uint32_t datas;
 
+unsigned long cnt0, cnt_cht;  // チャタリング防止のためタイマを設ける
+int layer_ischange;           // 1:レイヤ変更がある場合 0:レイヤ変更が検出されない場合
+int i;
+int isclick, reload_time;
+
 #define COLOR_REPEAT 2
 
 // create a pixel strand with 1 pixel on PIN_NEOPIXEL
@@ -127,65 +133,10 @@ void setup() {
 
 void loop() {
   nowtime = millis();
-  if (nowtime - starttime > 1) {
-    starttime = nowtime;
-    now_sw = get_sw();
-    Serial.println(now_sw, HEX);
-    sw_process();
 
-  }
+  now_sw = get_sw();
+  Serial.println(pattern);
 
-  old_sw = now_sw;
-}
-
-/************************************************************************/
-/* SW取得(13個)                                                          */
-/* 引数 なし　　　　　　　　                                              */
-/* 戻り値 1:ON 0:OFF                                                     */
-/************************************************************************/
-uint32_t get_sw(void) {
-  uint32_t ret;
-  int i, j, k;
-  int now_row;
-  uint32_t portdata = 0x0001;
-
-  k = 0; // 現在のSW読み込み位置
-  for (i = 0; i < (sizeof(rows) / sizeof(rows[0])); i++) { // ROW側
-    set_ROW(i);
-    for (j = 0; j < (sizeof(cols) / sizeof(cols[0])); j++) { //COL側
-      sw_stat[k] = digitalRead(cols[j]);
-      k++;
-    }
-  }
-  ret = 0;
-
-  for (i = 0; i < (sizeof(sw_stat) / sizeof(sw_stat[0])); i++) {
-    ret += sw_stat[i] * portdata;
-    portdata <<= 1;
-  }
-  ret = SW_DATA_MAX - ret;  // 11bitの最大値(511)
-  return ret;
-}
-
-void set_ROW(int row) {
-  int i;
-  // まず全部消す
-  for (i = 0; i < 5; i++) {
-    digitalWrite(rows[i], HIGH);
-  }
-  // ROWxxをGPIOの位置に変換
-  digitalWrite(rows[row], LOW);
-}
-
-/************************************************************************/
-/* SWのキーコード割り当て                                                 */
-/* 引数 なし　　　　　　　　                                              */
-/* 戻り値 なし                                                           */
-/************************************************************************/
-void sw_process(void) {
-  unsigned long cnt0, cnt_cht;  // チャタリング防止のためタイマを設ける
-  int layer_ischange;           // 1:レイヤ変更がある場合 0:レイヤ変更が検出されない場合
-  int i;
   switch (pattern) {
     // SWの全スキャン
     case SCAN_SW:
@@ -201,7 +152,8 @@ void sw_process(void) {
 
     // SWのどれかが押された時
     case TURN_ON:
-      cnt_cht = millis();
+      nowtime = millis();
+      isclick = 0; // 連続押し状態を初期化
       layer_ischange = get_layer_change();
       if (layer_ischange == 1) {   // レイヤ変更があった場合
         layer++;                   // レイヤの階層を1進める
@@ -220,11 +172,11 @@ void sw_process(void) {
           delay(100);
         }
         debug_led(layer);  // レイヤ切り替え状態を表示
-        while (get_sw() > 0); // 同時押しが離されるまで待つ
+        while (now_sw > 0); // 同時押しが離されるまで待つ
         pattern = SCAN_SW;  // 検出状態を最初に戻す
 
       } else {
-        if (cnt_cht - cnt0 > 40) {  // チャタリング防止:40ms
+        if (nowtime - cnt0 > 40) { // チャタリング防止:40ms
           pattern = DETECT_SW;
           cnt0 = cnt_cht;
         }
@@ -373,14 +325,79 @@ void sw_process(void) {
           break;
 
       }
+      isclick++;
       Keyboard.releaseAll();  // 押しているキーがある場合は離す
-      pattern = SCAN_SW;
+      cnt0 = nowtime;
+      pattern = RELOAD_SW;
+      break;
+
+    case RELOAD_SW:
+      if (isclick == 1) reload_time = 500;
+      else reload_time = 50;
+
+      now_sw = get_sw();
+
+      if (nowtime - cnt0 > reload_time ) {
+        cnt0 = cnt_cht;
+        if (now_sw > 0) {
+          pattern = DETECT_SW;
+        }
+        else {
+          pattern = SCAN_SW;
+        }
+      }
+      else {
+        if (now_sw == 0) {
+          pattern = SCAN_SW;
+        }
+      }
       break;
 
     default:
       /* NOT REACHED */
       break;
   }
+
+  old_sw = now_sw;
+}
+
+/************************************************************************/
+/* SW取得(20個)                                                          */
+/* 引数 なし　　　　　　　　                                              */
+/* 戻り値 1:ON 0:OFF                                                     */
+/************************************************************************/
+uint32_t get_sw(void) {
+  uint32_t ret;
+  int i, j, k;
+  int now_row;
+  uint32_t portdata = 0x0001;
+
+  k = 0; // 現在のSW読み込み位置
+  for (i = 0; i < (sizeof(rows) / sizeof(rows[0])); i++) { // ROW側
+    set_ROW(i);
+    for (j = 0; j < (sizeof(cols) / sizeof(cols[0])); j++) { //COL側
+      sw_stat[k] = digitalRead(cols[j]);
+      k++;
+    }
+  }
+  ret = 0;
+
+  for (i = 0; i < (sizeof(sw_stat) / sizeof(sw_stat[0])); i++) {
+    ret += sw_stat[i] * portdata;
+    portdata <<= 1;
+  }
+  ret = SW_DATA_MAX - ret;
+  return ret;
+}
+
+void set_ROW(int row) {
+  int i;
+  // まず全部消す
+  for (i = 0; i < 5; i++) {
+    digitalWrite(rows[i], HIGH);
+  }
+  // ROWxxをGPIOの位置に変換
+  digitalWrite(rows[row], LOW);
 }
 
 /************************************************************************/
