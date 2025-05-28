@@ -140,13 +140,10 @@ void loop() {
   switch (pattern) {
     // SWの全スキャン
     case SCAN_SW:
+      digitalWrite(LED_RIGHT, LOW);
       if (now_sw != old_sw) {
         pattern = TURN_ON;
-        digitalWrite(LED_RIGHT, HIGH);
-        cnt0 = millis();
-      }
-      if ( now_sw < 1 ) {
-        digitalWrite(LED_RIGHT, LOW);
+        cnt0 = nowtime;
       }
       break;
 
@@ -185,6 +182,7 @@ void loop() {
 
     // ここから下にSWが押された時の挙動を書く
     case DETECT_SW:
+      digitalWrite(LED_RIGHT, HIGH);
       switch (layer) {
         case LAYER_1:
           /* ここにレイヤ1の内容を書く */
@@ -243,7 +241,7 @@ void loop() {
             //  Keyboard.press(')');
           }
           if ( now_sw & DET_SW19 ) {
-            Keyboard.press(KEY_RIGHT_GUI);
+            Keyboard.press('.');
           }
           if ( now_sw & DET_SW20 ) {
             //  Keyboard.press(')');
@@ -332,7 +330,7 @@ void loop() {
       break;
 
     case RELOAD_SW:
-      if (isclick == 1) reload_time = 500;
+      if (isclick == 1) reload_time = 350;
       else reload_time = 50;
 
       now_sw = get_sw();
