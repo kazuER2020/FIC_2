@@ -271,7 +271,7 @@ void loop() {
             Keyboard.press(KEY_PAGE_UP);
           }
           if ( now_sw & DET_SW8 ) {
-            Keyboard.press(KEY_PRINTSCREEN);
+            Keyboard.press(KEY_BACKSPACE);
           }
           if ( now_sw & DET_SW9 ) {
             Keyboard.press(KEY_LEFT_ARROW);
@@ -335,7 +335,7 @@ void loop() {
             Keyboard.press(KEY_PAGE_UP);
           }
           if ( now_sw & DET_SW8 ) {
-            Keyboard.press(KEY_BACKSPACE);
+            Keyboard.press(KEY_PRINT_SCREEN);
           }
           if ( now_sw & DET_SW9 ) {
             Keyboard.press(KEY_LEFT_ARROW);
